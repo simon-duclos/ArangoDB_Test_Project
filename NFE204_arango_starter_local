@@ -1,0 +1,5 @@
+Rem Ce batch dos est à lancer en mode admin dans le répertoire où est stocké arangodb
+Rem Au préalable : créer les sous-répertoires S1,S2,S3
+start cmd.exe /k "%0\..\arangodb  --starter.data-dir S1"
+start cmd.exe /k "%0\..\arangodb --starter.join 127.0.0.1 --starter.data-dir S2"
+start cmd.exe /k "%0\..\arangodb --starter.join 127.0.0.1 --starter.data-dir S3"
