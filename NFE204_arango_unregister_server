@@ -1,0 +1,8 @@
+Rem Ce batch dos est à lancer dans le répertoire où est stocké arangoimport
+set endpoint=http://127.0.0.1:8569
+Rem trouver le starter_id dans le fichier setup.json d'un des process restants
+set starter_id=2289c41c
+set use_force=true
+start cmd.exe /k "%0\..\arangodb remove starter --starter.endpoint=%endpoint%" --starter.id %starter_id% --force %use_force%
+exit 0
+Rem 2020-05-23T19:23:01+02:00 |FATA| Failed to fetch ID from starter component=arangodb error="Get http://127.0.0.1:8569/id: dial tcp 127.0.0.1:8569: connectex: No connection could be made because the target machine actively refused it."
