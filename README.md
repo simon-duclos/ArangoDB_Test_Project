@@ -83,7 +83,7 @@ Pour l’installation en mode cluster, il y a deux façons de procéder :
 Voici le code que j’ai exécuté sous Windows pour l’installation en mode starter : ayant créé trois répertoires S1, S2, S3, il faut lancer dans 3 terminaux (cmd = invites de commande)  le programme arangod en mode administrateur avec les commandes suivantes :
 arangodb  --starter.data-dir S1
 arangodb --starter.join 127.0.0.1 --starter.data-dir S2
-arangodb --starter.join 127.0.0.1 --starter.data-dir S3
+arangodb --starter.join 127.0.0.1 --starter.data-dir S3 
 
 Les serveurs se lancent, par exemple le serveur 3 :
  
@@ -98,16 +98,16 @@ e.	Architecture du mode cluster
 
 En mode cluster, différents composants d’ArangoDB interagissent :
 •	Un nombre impairs d’agents forment l’agence (Agency). L’agence contient la configuration du cluster et s’occupe de gérer la cohérence des données. Un mécanisme de consensus est mis en place basé sur le protocole RAFT. L’agence n’a pas besoin de forte ressource mémoire pour fonctionner et peut fonctionner sur des serveurs moins performants que les autres composants.
-Par défaut implémenté sur le port 8531 [+10*n, où n = nombre d’agents], on peut connaître l’état des agents en tapant la commande : curl GET localhost:8531/_api/agency/config
+Par défaut implémenté sur le port 8531 [+10*n, où n = nombre d’agents], on peut connaître l’état des agents en tapant la commande : curl GET localhost:8531/_api/agency/config 
 
 Exemple avec trois serveurs en mode starter (la configuration de notre projet, voir chapitre suivant), les agents sont sur les ports 8531,8541 et 8551.
  
 
 •	Les coordinateurs assurent l’interface avec les clients dont les applications qui ont besoin d’accéder aux données. Par défaut implémenté sur le port 8530 [+10*n, où n = nombre de coordinateurs], on peut connaître l’état des coordinateurs en tapant la commande : 
-curl GET http://localhost:8530/_db/DB_MOBREGI/_admin/server/role
+curl GET http://localhost:8530/_db/DB_MOBREGI/_admin/server/role 
 
 •	Les serveurs de bases de données stockent les données. Par défaut implémenté sur le port 8529 [+10*n, où n = nombre de coordinateurs], on peut connaître l’état des serveurs en tapant la commande : 
-curl GET http://localhost:8529/_db/DB_MOBREGI/_admin/server/role
+curl GET http://localhost:8529/_db/DB_MOBREGI/_admin/server/role 
 
 Remarque : il y a aussi bien sûr la notion de « shard », c’est-à-dire une unité de stockage des éléments des collections. Un shard contient tout ou partie des collections et des répliques. Si le facteur de réplication des bases ou collections est différent du nombre de serveurs, le nombre de shards et nombre de serveurs de bases de données diffèrent. Dans ce projet, je fais tourner 3 instances de serveurs et un facteur de réplication de 3. Chaque shard a un serveur principal et 2 serveurs de réplication.
 Dans le mode starter, les serveurs de base de données et coordinateurs sont les mêmes, et les trois premiers serveurs lancés accueillent les agents.
@@ -162,14 +162,14 @@ Point capital : il est possible d’effectuer des jointures nativement et sans d
 Une requête commence par un FOR et termine par un RETURN, on peut ajouter un FILTER :
 FOR my IN COL_MOBREGI_FULL
 FILTER my._id == "COL_MOBREGI_FULL/109644325"
-RETURN my
+RETURN my 
 
 Voici une jointure (simple et rapide) :
 FOR s IN MOB_REGI_SMALL
     FOR v1 IN MOB_REGI_VILLES
         For v2 IN MOB_REGI_VILLES
     FILTER s._from == 'MOB_REGI_VILLES/C93048' AND s._from == v1._id AND s._to == v2._id
-    RETURN { Origine : v1.nom, Destination : v2.nom, Nombre : floor(s.nombre) }
+    RETURN { Origine : v1.nom, Destination : v2.nom, Nombre : floor(s.nombre) } 
  
 Une requête avec jointure et insert :
 
@@ -177,7 +177,7 @@ FOR s IN MOB_REGI_SMALL
     FOR v1 IN MOB_REGI_VILLES
         For v2 IN MOB_REGI_VILLES
     FILTER s._from == v1._id AND s._to == v2._id
-    INSERT {_from : s._from, _to : s._to,nombre: s.nombre, demenagement : concat(floor(s.nombre)," personnes ont déménagé de ",v1.nom," vers ",v2.nom," en 2016 } INTO MOB_REGI_SMALL_DEM
+    INSERT {_from : s._from, _to : s._to,nombre: s.nombre, demenagement : concat(floor(s.nombre)," personnes ont déménagé de ",v1.nom," vers ",v2.nom," en 2016 } INTO MOB_REGI_SMALL_DEM 
 Les requêtes spécifiques aux graphes et à la recherche d’information seront présentées plus bas.
 
 
@@ -202,7 +202,7 @@ COMMUNE	Code INSEE de la commune française sans arrondissement ou modalité "99
 Attention, ne correspond pas au code postal !
 ARM	Code INSEE de l’arrondissement pour Paris, Lyon, Marseille au moment du recensement (après déménagement s’il y a lieu). 
 DCRAN	Code INSEE de la commune française avec arrondissement ou modalité "99999" du lieu de résidence au 1er janvier de l’année précédent le recensement (avant déménagement s’il y a lieu)
-IPONDI	Nombre de personnes. Ce chiffre contient 10 décimales car il s’agit d’une pondération statistique et non une valeur exacte depuis que le recensement s’effectue de manière partielle (2013)
+IPONDI	Nombre de personnes. Ce chiffre contient 10 décimales car il s’agit d’une pondération statistique et non une valeur exacte depuis que le recensement s’effectue de manière partielle (2013) 
 
 
 
@@ -217,7 +217,7 @@ Comme précisé au chapitre d’avant, un facteur de réplication de 3 est chois
 Plaçons-nous dans la base de données nouvellement créée et ajoutons ensuite la collection qui contiendra les villes de départ et d’arrivée. Comme le but est de s’en servir pour stocker les arêtes du graphe, on créera une collection de type « sommets ». On aurait aussi pu la créer via l’interface web.
 arangosh> require("@arangodb").db._useDatabase("DB_MOBREGI");
 arangosh> require("@arangodb").db._createEdgeCollection("COL_MOBREGI_DEM")   ;
-true
+true 
 
 Ajoutons ensuite la collection de référence des villes. On utilise un facteur de partionnement de 3 (nous regarderons plus tard ce point) :
 arangosh> require("@arangodb").db._create("COL_MOBREGI_VILLES",{ numberOfShards : 3})   ;
@@ -228,11 +228,11 @@ c.	Insertion des données dans la base
 Effectuons ensuite l’insertion des données des fichiers csv vers la base de données créée.
 Avec l’utilitaire arangoimport l’insertion des données de déménagement s’effectue sans problème et prend un peu plus de 1h50 sur mon ordinateur (C’est long ! Mais il ne s’agit pas de 3 serveurs en parallèles mais 3 instances sur la même machine, on est donc limité par le flux en écriture. Avec une seule instance de serveur et non 3, l’opération prend 25 minutes environ). 
 Une fois le fichier chargé en totalité la collection compte alors 19 181 873 documents. La collection est créée lors de l’import (--create-collection true).
-Windows cmd (admin)> arangoimport --file D:\FD_MIGCOM_2016.csv --type csv --separator ";" --collection "COL_MOBREGI_RAWIMPORT" --server.database DB_MOBREGI --create-collection true
+Windows cmd (admin)> arangoimport --file D:\FD_MIGCOM_2016.csv --type csv --separator ";" --collection "COL_MOBREGI_RAWIMPORT" --server.database DB_MOBREGI --create-collection true 
  
  
 Ensuite créons un index dans arangosh pour permettre d’accélérer la requête d’après. Ici ça n’est pas franchement nécessaire – l’index met 5 minutes à se créer et on en gagne 2 sur la requête – mais illustratif !
-arangosh> require("@arangodb").db.COL_MOBREGI_RAWIMPORT.ensureIndex({ type: "persistent", fields: [ "DCRAN","ARM","COMMUNE" ], unique: false });
+arangosh> require("@arangodb").db.COL_MOBREGI_RAWIMPORT.ensureIndex({ type: "persistent", fields: [ "DCRAN","ARM","COMMUNE" ], unique: false }); 
  
 
 Une fois les données chargées dans COL_MOBREGI_RAWIMPORT, on les transforme pour ne plus conserver que les champs correspondants à la ville de départ et à la ville d’arrivée grâce à la requête AQL suivante (effectuée dans l’interface web) :
@@ -245,7 +245,7 @@ FOR mob IN COL_MOBREGI_RAWIMPORT
         _from :from,
         _to:to,
         Nombre
-    } INTO COL_MOBREGI_DEM
+    } INTO COL_MOBREGI_DEM 
 
 Quelques explications :
 Sur le retravail des colonnes : Le champ « identifiant de la ville de départ » correspond à la colonne DCRAN ; l’« identifiant de la ville d’arrivée » à la colonne COMMUNE. Pour Paris, Lyon, Marseille il est préférable d’avoir l’identifiant de l’arrondissement indiqué dans la colonne ARM. 
@@ -269,8 +269,8 @@ Ensuite on insère les données de villes dans la table grâce au script AQL sui
 FOR vil IN COL_MOBREGI_VILLES_RAWIMPORT
     FILTER vil.COD_VAR IN ["COMMUNE", "ARM"]
     INSERT {_key : (LENGTH(vil.COD_MOD)==4 ? CONCAT("C0",vil.COD_MOD) : CONCAT("C",vil.COD_MOD)), nom : vil.LIB_MOD} 
-    INTO COL_MOBREGI_VILLES
-Remarquons un FILTER, l’équivalent AQL d’une clause WHERE.
+    INTO COL_MOBREGI_VILLES 
+Remarquons un FILTER, l’équivalent AQL d’une clause WHERE. 
 
 Profitons pour regarder l’architecture de réplication/partitionnement de la collection :
  
@@ -294,7 +294,7 @@ arangosh> var graph = graph_module._create("GRA_MOBREGI");
 arangosh> graph._addVertexCollection("COL_MOBREGI_VILLES");
 arangosh> var rel = graph_module._relation("COL_MOBREGI_DEM", ["COL_MOBREGI_VILLES"], ["COL_MOBREGI_VILLES"]);
 arangosh> graph._extendEdgeDefinitions(rel);
-arangosh> graph;
+arangosh> graph; 
 
 Remarque : on aurait pu aussi créer le graphe dans l’interface web.
 Explication : on se place dans la base de données DB_MOBREGI et on crée un graphe nommé GRA_MOBREGI. On lui associe une collection pour les nœuds COL_MOBREGI_VILLES, que l’on associe 2 fois (pour la commune de départ et d’arrivée) à la collection de sommets COL_MOBREGI_DEM.
@@ -308,12 +308,12 @@ L’outil de visualisation de graphe permet de choisir un sommet puis de l’ét
 Ajoutons un attribut « département » dans la table COL_MOBREGI_VILLES grâce à une table AQL :
 FOR vil IN COL_MOBREGI_VILLES
     UPDATE {_key : vil._key, departement : SUBSTRING(vil._key,1, 2) }
-    INTO COL_MOBREGI_VILLES
+    INTO COL_MOBREGI_VILLES 
 
 Et un attribut « classe_nombre » pour rassembler les déménagements de moins de 20 personnes, entre 20 et 100 et au-delà de 100 personnes.
 FOR dem IN COL_MOBREGI_DEM
     UPDATE {_key : dem._key, classe_nombre : (dem.Nombre >= 20 ? (dem.Nombre>100 ? ">100" : "20-100") : "<20") }
-    INTO COL_MOBREGI_DEM
+    INTO COL_MOBREGI_DEM 
 
 Il est possible de se servir de ces attributs dans le graphe, par exemple pour séparer les communes de destination par couleur en fonction du département ou encore ajouter des libellés sur les arêtes :
  
@@ -362,27 +362,27 @@ FOR s IN COL_MOBREGI_DEM
     FOR v1 IN COL_MOBREGI_VILLES
         FOR v2 IN COL_MOBREGI_VILLES
     FILTER s._from == v1._id AND s._to == v2._id
-    INSERT {_from : s._from, _to : s._to,nombre: s.nombre, demenagement : concat(floor(s.nombre)," personnes ont déménagé de ",v1.nom," vers ",v2.nom," en 2016") } INTO COL_MOBREGI_RI
+    INSERT {_from : s._from, _to : s._to,nombre: s.nombre, demenagement : concat(floor(s.nombre)," personnes ont déménagé de ",v1.nom," vers ",v2.nom," en 2016") } INTO COL_MOBREGI_RI 
 
 
  
 Créons ensuite la vue dans arangosh:
-arangosh > var v = require("@arangodb").db._createView("VUE_MOBREGI","arangosearch");
+arangosh > var v = require("@arangodb").db._createView("VUE_MOBREGI","arangosearch"); 
 
 
 Puis un lien de recherche, qui référence tous les champs sans modification (par défaut, l’analyseur identity est appliqué, qui n’effectue aucune opération) sauf le champ “demenagement” auquel est appliqué l’analyseur “text_fr” qui effectue une tokenisation et une racinisation :
 arangosh > var link = {
                        includeAllFields: true,
                        fields : { demenagement : { analyzers : [ "text_fr" ] } }
-                    };
+                    }; 
 
 Appliquons le lien à la vue :
-v.properties({ links: {COL_MOBREGI_RI: link }})
+v.properties({ links: {COL_MOBREGI_RI: link }}) 
 
 Arangosh renvoie ensuite les propriétés de la vue :
  
 Vérifions que la vue fonctionne grâce à la requête AQL :
-arangosh > db._query("FOR d IN VUE_MOBREGI COLLECT WITH COUNT INTO count RETURN count")
+arangosh > db._query("FOR d IN VUE_MOBREGI COLLECT WITH COUNT INTO count RETURN count") 
 
  Il y a bien des documents dans la vue.
 Nous pouvons maintenant tester notre vue, en effectuant une racinisation puis tokenisation :
@@ -405,24 +405,24 @@ Neo4J est incontestablement le leader des bases de données graphes dans le mond
 J’ai donc voulu comparer Neo4J avec ArangoDB en insérant les données de mobilité régionales. Après avoir essayé l’image docker, j’ai préféré utiliser Neo4J Desktop dont la prise en main est facile et bien documentée.
 Il faut créer une base de données puis insérer les données du csv. Pour plus de simplicité, j’ai travaillé avec un csv identique à la collection COL_MOBREGI_VILLES : les villes. 
 Le langage de requête s’appelle Cypher, voici la commande d’insert :
-LOAD CSV with headers FROM 'file:/// COL_MOBREGI_VILLES.csv' AS row MERGE (v:ville {villeId: row.id})
+LOAD CSV with headers FROM 'file:/// COL_MOBREGI_VILLES.csv' AS row MERGE (v:ville {villeId: row.id}) 
 
 On crée de même la table correspondant à la collection COL_MOBREGI_DEM : les déménagements.
 LOAD CSV with headers FROM 'file:///COL_MOBREGI_DEM.csv' AS row 
-MERGE (vf:v_from {ville_from: row.from})
+MERGE (vf:v_from {ville_from: row.from}) 
 
 LOAD CSV with headers FROM 'file:///COL_MOBREGI_DEM.csv' AS row 
-MERGE (vt:v_to {ville_to: row.to})
+MERGE (vt:v_to {ville_to: row.to}) 
 
 LOAD CSV WITH HEADERS FROM 'file:///COL_MOBREGI_DEM.csv' AS row
 MATCH (vf:v_from {ville_from: row.from})
 MATCH (vt:v_to {ville_to: row.to})
 MERGE (vf)-[d:DEMENAGE_VERS]->(vt)
-RETURN count(*);
+RETURN count(*); 
 
 
 On peut ensuite afficher le graphe des déménagements depuis le 3e arrondissement de Paris :
-MATCH p=(n:v_from { ville_from: 'C75103' })-[r:DEMENAGE_VERS]->() RETURN p LIMIT 250
+MATCH p=(n:v_from { ville_from: 'C75103' })-[r:DEMENAGE_VERS]->() RETURN p LIMIT 250 
 
  
 La grosse différence entre Neo4J et ArangoDB repose sur le fait que Neo4J est une base de données orientée graphe, alors que Neo4J comporte une couche graphe sur une base de données de stockage de documents JSON. 
@@ -435,34 +435,34 @@ Souhaitant au démarrage me concentrer sur une base de données NoSQL orienté g
 La contrepartie de cette richesse, c’est que j’ai mis beaucoup plus de temps que j’avais prévu initialement à me former (y compris, quoique sommairement, à Neo4J pour faire un bref comparatif comme je m’y étais engagé dans le document de présentation du projet), je n’ai pas pu creuser, aller en profondeur de tous les sujets comme je l’aurais souhaité. Si je devais reprendre au début, je choisirais sûrement de mon concentrer sur un seul aspect (probablement l’architecture).
 Je dois dire que j’ai eu durant ce projet très peu de bugs, ce qui est plutôt rare dans mon expérience. La documentation en ligne n’est pas monumentale, mais bien calibrée suffisamment précisément car elle couvre tous les aspects. 
  
-6.	Annexes
-i.	Lancement de trois instances sur trois images docker en mode starter
-> Machine docker 1
+6.	Annexes 
+i.	Lancement de trois instances sur trois images docker en mode starter 
+> Machine docker 1 
 export IP=192.168.99.100
 docker volume create arangodb1
 docker run -it --name=adb1 --rm -p 8528:8528 -v arangodb1:/data -v /var/run/docker.sock:/var/run/docker.sock arangodb
 /arangodb-starter --starter.address=$IP
 
-> Machine docker 2
+> Machine docker 2 
 export IP=192.168.99.100
 docker volume create arangodb2
 docker run -it --name=adb2 --rm -p 8548:8528 -v arangodb2:/data -v /var/run/docker.sock:/var/run/docker.sock arango
 db/arangodb-starter --starter.address=$IP --starter.join=$IP
 
-> Machine docker 3
+> Machine docker 3 
 export IP=192.168.99.100
 docker volume create arangodb3
 docker run -it --name=adb3 --rm -p 8558:8528 -v arangodb3:/data -v /var/run/docker.sock:/var/run/docker.sock arango
-db/arangodb-starter --starter.address=$IP --starter.join=$IP
+db/arangodb-starter --starter.address=$IP --starter.join=$IP 
 
-ii.	Créer une collection
-
- 
-iii.	Requête retournant le nombre de lignes d’une collection
+ii.	Créer une collection 
 
  
+iii.	Requête retournant le nombre de lignes d’une collection 
 
-iv.	Essai de visualisation de graphe :
+ 
+
+iv.	Essai de visualisation de graphe : 
 Interprétation : j’ai choisi de commencer le parcours du graphe par la commune où j’ai grandi (Beautiran, code INSEE 33037). Cette commune est proche (physiquement certes, mais ici dans le graphe c’est en termes de nombre de déménagements) d’un gros nœud : Bordeaux, depuis lequel déménagent beaucoup de personnes vers de nombreuses communes.
  
 
