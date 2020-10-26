@@ -1,0 +1,9 @@
+Rem Ce batch dos est à lancer dans le répertoire où est stocké arangoimport
+set fichier=FD_MIGCOM_2016
+set db=DB_MOBREGI
+set collection="COL_MOBREGI_FULL"
+Rem set translate_param=--translate "id=_key" --translate "name=nom"
+Rem set translate_param=--translate "to=_to" --translate "from=_from"
+set separator=--separator ";"
+start cmd.exe /k "%0\..\arangoimport --file D:\CNAM\NFE204\RP2016_migcom_csv\%fichier%.csv --server.database %db% --type csv %translate_param% %separator% --create-collection true --collection "%collection%" "
+exit 0
