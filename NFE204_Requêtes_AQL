@@ -1,0 +1,47 @@
+//First Query
+FOR my IN COL_MOBREGI_FULL
+FILTER my._id == "COL_MOBREGI_FULL/109644325"
+RETURN my
+
+//Query with filter column (similar to where clause)
+FOR s IN MOB_REGI_SMALL
+    FOR v1 IN MOB_REGI_VILLES
+        For v2 IN MOB_REGI_VILLES
+    FILTER s._from == 'MOB_REGI_VILLES/C93048' AND s._from == v1._id AND s._to == v2._id
+    RETURN { Origine : v1.nom, Destination : v2.nom, Nombre : floor(s.nombre) }
+
+//Insert Query
+FOR s IN MOB_REGI_SMALL
+    FOR v1 IN MOB_REGI_VILLES
+        For v2 IN MOB_REGI_VILLES
+    FILTER s._from == v1._id AND s._to == v2._id
+    INSERT {_from : s._from, _to : s._to,nombre: s.nombre, demenagement : concat(floor(s.nombre)," personnes ont déménagé de ",v1.nom," vers ",v2.nom," en 2016 } INTO MOB_REGI_SMALL_DEM
+
+//Keep only from an to fields
+FOR mob IN COL_MOBREGI_RAWIMPORT
+    COLLECT from = LENGTH(mob.DCRAN)==4 ? CONCAT("COL_MOBREGI_VILLES/C0",mob.DCRAN) : CONCAT("COL_MOBREGI_VILLES/C",mob.DCRAN),
+            to = mob.ARM == 'ZZZZZ' ? (LENGTH(mob.COMMUNE)==4 ? CONCAT("COL_MOBREGI_VILLES/C0",mob.COMMUNE) : CONCAT("COL_MOBREGI_VILLES/C",mob.COMMUNE)):CONCAT("COL_MOBREGI_VILLES/C",mob.ARM) 
+    AGGREGATE Nombre = SUM(mob.IPONDI)
+    SORT from DESC
+    INSERT {
+        _from :from,
+        _to:to,
+        Nombre
+    } INTO COL_MOBREGI_DEM
+    
+    //Insert City data
+    FOR vil IN COL_MOBREGI_VILLES_RAWIMPORT
+    FILTER vil.COD_VAR IN ["COMMUNE", "ARM"]
+    INSERT {_key : (LENGTH(vil.COD_MOD)==4 ? CONCAT("C0",vil.COD_MOD) : CONCAT("C",vil.COD_MOD)), nom : vil.LIB_MOD} 
+    INTO COL_MOBREGI_VILLES
+
+//Add department data
+FOR vil IN COL_MOBREGI_VILLES
+    UPDATE {_key : vil._key, departement : SUBSTRING(vil._key,1, 2) }
+    INTO COL_MOBREGI_VILLES
+
+//Add class nombre attribute
+FOR dem IN COL_MOBREGI_DEM
+    UPDATE {_key : dem._key, classe_nombre : (dem.Nombre >= 20 ? (dem.Nombre>100 ? ">100" : "20-100") : "<20") }
+    INTO COL_MOBREGI_DEM
+
